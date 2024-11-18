@@ -1,0 +1,105 @@
+Steps to Build the Contact Form App.
+
+Step 1: Set up the Project
+Create a new project:
+bash:-
+
+django-admin startproject contact_project
+cd contact_project
+
+Create an app:
+bash:-
+python manage.py startapp contact
+Add 'contact' to INSTALLED_APPS in settings.py.
+
+Step 2: Create the Contact Model
+Edit contact/models.py:
+python:-
+
+from django.db import models
+
+class Contact(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+
+    def __str__(self):
+        return self.name
+
+Run migrations:
+bash:-
+
+python manage.py makemigrations
+python manage.py migrate
+
+Step 3:- Create Views
+Edit contact/views.py:
+python:
+
+from django.shortcuts import render
+from .models import Contact
+
+def contact_form(request):
+    submitted = False
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        Contact.objects.create(name=name, email=email, message=message)
+        submitted = True
+    return render(request, 'contact/contact_form.html', {'submitted': submitted})
+
+Step 4: Create URLs
+Create contact/urls.py:
+python:-
+
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.contact_form, name='contact_form'),
+]
+
+Include this in the urls.py of the project:
+python:-
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('contact.urls')),
+]
+
+Step 5: Create Templates
+Create templates/contact/contact_form.html:
+html:-
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Form</title>
+</head>
+<body>
+    <h1>Contact Us</h1>
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="name" placeholder="Your Name" required><br>
+        <input type="email" name="email" placeholder="Your Email" required><br>
+        <textarea name="message" placeholder="Your Message" required></textarea><br>
+        <button type="submit">Submit</button>
+    </form>
+    {% if submitted %}
+        <p>Thank you! Your message has been sent.</p>
+    {% endif %}
+</body>
+</html>
+
+Step 6: Run the Server
+Start the development server:
+bash:-
+
+python manage.py runserver
+Access the form at http://127.0.0.1:8000/.
